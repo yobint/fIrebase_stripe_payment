@@ -7,7 +7,15 @@ import {
     createUserWithEmailAndPassword,
     signOut
 } from 'firebase/auth';
-import { getFirestore, doc, getDoc, updateDoc, setDoc} from "firebase/firestore";
+
+import { getFirestore,
+     doc,
+     getDoc,
+     updateDoc,
+     setDoc,
+     getDocs,
+     collection
+} from "firebase/firestore";
 
 
 const firebaseApp = initializeApp({
@@ -153,5 +161,25 @@ const logout = async () => {
 };
 
 btnLogout.addEventListener("click", logout);
+
+const getUserDoc = async (db, user) => {
+    const docRef = doc(db, "userInfo", user.uid);
+    const docSnap = await getDoc(docRef);
+    return docSnap;
+};
+
+btnInfo.addEventListener("click", async () => {
+    const docSnap = await getUserDoc(db, auth.currentUser);
+    let userData;
+  
+    if (docSnap.exists()) {
+      userData = docSnap.data();
+      console.log(`Email: ${userData.email}, UID: ${userData.uid}`);
+    } else {
+      console.log("No such document!");
+    }
+  });
+ 
+
 
 
