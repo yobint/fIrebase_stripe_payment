@@ -46,54 +46,43 @@ const monitorAuthState = async () => {
     });
   };
 
-/*onAuthStateChanged(auth, user => {
-    if(user != null) {
-        console.log('logged in!');
-        console.log(user);
-        writeNewUser();
-    } else {
-        console.log('No user');
-    }
-});*/
-
-/* antes da sugestão do blackbox-3
-connectAuthEmulator(auth, "http://localhost:9099"); 
-const monitorAuthState = async () => {
-    onAuthStateChanged(auth, user => {
-        if (user != null) {
-            console.log('logged in')
-            console.log(user);
-        }
-        else {
-            console.log("no user");
-        };
-    })
-};
-
-monitorAuthState();*/
-
-/* blackbox-2
-const monitorAuthState = async () => {
-    return new Promise((resolve) => {
-      onAuthStateChanged(auth, (user) => {
-        if (user != null) {
-          console.log("logged in");
-          console.log(user);
-          resolve(true);
-        } else {
-          console.log("no user");
-          resolve(false);
-        }
-      });
-    });
-  };*/
-
-
 const db = getFirestore(firebaseApp);
 const firestore = getFirestore();
 
 const newUser = doc(firestore, 'userInfo/userList');
-/* blackbox-2 
+
+const writeNewUser = async () => {
+    const user = auth.currentUser;
+  
+    if (user) {
+      console.log(user);
+      const docData = {
+        [user.uid]: {
+          email: user.email,
+          lastLogin: new Date(),
+        },
+      };
+  
+      try {
+        const userDocRef = doc(db, 'userInfo', 'userList');
+        const userDocSnap = await getDoc(userDocRef);
+  
+        if (userDocSnap.exists()) {
+          await updateDoc(userDocRef, {
+            ...userDocSnap.data(),
+            ...docData,
+          });
+        } else {
+          await setDoc(userDocRef, docData);
+        }
+      } catch (error) {
+        console.log('Error writing user data:', error);
+      }
+    } else {
+      console.log("No user logged in");
+    }
+  };
+/* opção 1
 function writeNewUser() {
     const user = auth.currentUser;
     if (user) {
@@ -107,8 +96,29 @@ function writeNewUser() {
         console.log("No user logged in");
     }
 };*/
-
+/*option 2
 function writeNewUser() {
+    const user = auth.currentUser;
+    if (user) {
+        console.log(user);
+        const docData = {
+            email: user.email,
+            uid: user.uid
+        };
+        getDoc(newUser).then((doc) => {
+            if (doc.exists()) {
+                updateDoc(newUser, docData);
+            } else {
+                setDoc(newUser, docData);
+            }
+        });
+    } else {
+        console.log("No user logged in");
+    }
+}*/
+
+/*option 3
+ function writeNewUser() {
     const user = auth.currentUser;
 
     console.log(user)
@@ -116,11 +126,17 @@ function writeNewUser() {
         email: user.email,
         uid: user.uid
     };
-    setDoc(newUser, docData, { merge: true });
+    getDoc(newUser).then((doc) => {
+        if (doc.exists()) {
+            updateDoc(newUser, docData);
+        } else {
+            setDoc(newUser, docData);
+        }
+    });
 };
-
-/* função editada pelo blackbox, mas falhou
-function writeNewUser() {
+*/
+/*option 4
+ function writeNewUser() {
     const user = auth.currentUser;
     if (!user) {
         console.log("No user logged in");
@@ -135,21 +151,14 @@ function writeNewUser() {
     };
 }*/
 
-/* função para ler userList, também falhou -- incompleta--
-async function readASingleDocument() {
-    const mySnapshot = await getDoc();
-    if (mySnapshot.exists()) {
-    const docData = mySnapshot.data();
-    console.log(docData);
-    }
-}*/
-
 const loginEmailPassword = async () => {
     const loginEmail = txtEmail.value;
     const loginPassword = txtPassword.value;
 
     try {
         const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+        console.log("Logged in:", userCredential.user);
+
     }
     catch(error) {
         console.log(error);
