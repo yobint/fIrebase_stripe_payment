@@ -136,7 +136,9 @@ const createAccount = async () =>  {
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
-        const user = userCredential.user
+        const user = userCredential.user;
+        console.log("Account created:", user);
+        return user;
     }
     catch(error) {
         console.log(error);
