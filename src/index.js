@@ -51,6 +51,7 @@ const firestore = getFirestore();
 
 const newUser = doc(firestore, 'userInfo/userList');
 
+/* FUNÇÂO ÙTIL PARA ATUALIZAR UM DOCUMENTO [incialmente o documento userList na coleção userInfo]
 const writeNewUser = async () => {
     const user = auth.currentUser;
   
@@ -81,75 +82,35 @@ const writeNewUser = async () => {
     } else {
       console.log("No user logged in");
     }
-  };
-/* opção 1
-function writeNewUser() {
+  };*/
+  
+  const writeNewUser = async () => {
     const user = auth.currentUser;
+  
     if (user) {
-        console.log(user)
-        const docData = {
-            email: "user.email",
-            uid: "user.uid"
-        };
-        setDoc(newUser, docData, { merge: true });
-    } else {
-        console.log("No user logged in");
-    }
-};*/
-/*option 2
-function writeNewUser() {
-    const user = auth.currentUser;
-    if (user) {
-        console.log(user);
-        const docData = {
-            email: user.email,
-            uid: user.uid
-        };
-        getDoc(newUser).then((doc) => {
-            if (doc.exists()) {
-                updateDoc(newUser, docData);
-            } else {
-                setDoc(newUser, docData);
-            }
-        });
-    } else {
-        console.log("No user logged in");
-    }
-}*/
-
-/*option 3
- function writeNewUser() {
-    const user = auth.currentUser;
-
-    console.log(user)
-    const docData = {
+      console.log(user);
+      const docData = {
         email: user.email,
-        uid: user.uid
-    };
-    getDoc(newUser).then((doc) => {
-        if (doc.exists()) {
-            updateDoc(newUser, docData);
+        uid: user.uid,
+        lastLogin: new Date(),
+      };
+  
+      try {
+        const userDocRef = doc(db, 'userInfo/', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+  
+        if (userDocSnap.exists()) {
+          await updateDoc(userDocRef, docData);
         } else {
-            setDoc(newUser, docData);
+          await setDoc(userDocRef, docData);
         }
-    });
-};
-*/
-/*option 4
- function writeNewUser() {
-    const user = auth.currentUser;
-    if (!user) {
-        console.log("No user logged in");
-        return;
+      } catch (error) {
+        console.log('Error writing user data:', error);
+      }
     } else {
-        const docData = {
-            email: user.email,
-            uid: user.uid,
-        };
-        updateDoc(newUser, docData, { merge: true});
-        console.log('Na base de dados.')
-    };
-}*/
+      console.log("No user logged in");
+    }
+  };
 
 const loginEmailPassword = async () => {
     const loginEmail = txtEmail.value;
