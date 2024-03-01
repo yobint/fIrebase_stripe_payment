@@ -199,16 +199,24 @@ btnSignout.addEventListener("click", deleteAccount);
 
 
 /* revisar botão Info [sugestão do blackbox]*/
-
-btnInfo.addEventListener("click", async () => {
-    const docSnap = await getUserDoc(db, auth.currentUser);
-    let userData;
+const getUserDoc = async (db, user) => {
+    const userDocRef = doc(db, 'userInfo', user.uid);
+    const userDocSnap = await getDoc(userDocRef);
   
-    if (docSnap.exists()) {
-      userData = docSnap.data();
-      console.log(`Email: ${userData.email}, UID: ${userData.uid}`);
+    if (userDocSnap.exists) {
+      return userDocSnap.data();
     } else {
-      console.log("No such document!");
+      throw new Error('User document does not exist');
+    }
+  };
+
+  btnInfo.addEventListener("click", async () => {
+    try {
+      const userDocSnap = await getDoc(doc(db, 'userInfo', auth.currentUser.uid));
+      const userData = userDocSnap.data();
+      console.log(`Email: ${userData.email}, UID: ${userData.uid}`);
+    } catch (error) {
+      console.error('Error getting user data:', error);
     }
   });
 
