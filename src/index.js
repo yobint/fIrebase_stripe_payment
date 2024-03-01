@@ -94,33 +94,33 @@ const writeNewUser = async () => {
     }
   };*/
   
-  const writeNewUser = async () => {
-    const user = auth.currentUser;
-  
-    if (user) {
-      console.log(user);
-      const docData = {
-        email: user.email,
-        uid: user.uid,
-        lastLogin: new Date(),
-      };
-  
-      try {
-        const userDocRef = doc(db, 'userInfo/', user.uid);
-        const userDocSnap = await getDoc(userDocRef);
-  
-        if (userDocSnap.exists()) {
-          await updateDoc(userDocRef, docData);
-        } else {
-          await setDoc(userDocRef, docData);
-        }
-      } catch (error) {
-        console.log('Error writing user data:', error);
+const writeNewUser = async () => {
+  const user = auth.currentUser;
+ 
+  if (user) {
+    console.log(user);
+    const docData = {
+      email: user.email,
+      uid: user.uid,
+      lastLogin: new Date(),
+    };
+
+    try {
+      const userDocRef = doc(db, 'userInfo/', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        await updateDoc(userDocRef, docData);
+      } else {
+        await setDoc(userDocRef, docData);
       }
-    } else {
-      console.log("No user logged in");
+    } catch (error) {
+      console.log('Error writing user data:', error);
     }
-  };
+  } else {
+    console.log("No user logged in");
+  }
+};
 
 const loginEmailPassword = async () => {
     const loginEmail = txtEmail.value;
@@ -157,7 +157,6 @@ const createAccount = async () =>  {
 };
 
 btnSignup.addEventListener("click", createAccount);
-
 
 const logout = async () => {
     await signOut(auth);
@@ -197,7 +196,6 @@ const deleteAccount = async () => {
 
 btnSignout.addEventListener("click", deleteAccount);
 
-
 /* revisar botão Info [sugestão do blackbox]*/
 const getUserDoc = async (db, user) => {
     const userDocRef = doc(db, 'userInfo', user.uid);
@@ -210,18 +208,12 @@ const getUserDoc = async (db, user) => {
     }
   };
 
-  btnInfo.addEventListener("click", async () => {
-    try {
-      const userDocSnap = await getDoc(doc(db, 'userInfo', auth.currentUser.uid));
-      const userData = userDocSnap.data();
-      console.log(`Email: ${userData.email}, UID: ${userData.uid}`);
-    } catch (error) {
-      console.error('Error getting user data:', error);
-    }
-  });
-
-
-
- 
-
-
+btnInfo.addEventListener("click", async () => {
+  try {
+    const userDocSnap = await getDoc(doc(db, 'userInfo', auth.currentUser.uid));
+    const userData = userDocSnap.data();
+    console.log(`Email: ${userData.email}, UID: ${userData.uid}`);
+  } catch (error) {
+    console.error('Error getting user data:', error);
+  }
+});
