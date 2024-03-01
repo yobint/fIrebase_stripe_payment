@@ -5,7 +5,8 @@ import {
     connectAuthEmulator, 
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
-    signOut
+    signOut,
+    deleteUser
 } from 'firebase/auth';
 
 import { getFirestore,
@@ -14,7 +15,8 @@ import { getFirestore,
      updateDoc,
      setDoc,
      getDocs,
-     collection
+     collection,
+     runTransaction
 } from "firebase/firestore";
 
 
@@ -156,17 +158,43 @@ const createAccount = async () =>  {
 
 btnSignup.addEventListener("click", createAccount);
 
+
 const logout = async () => {
     await signOut(auth);
 };
 
 btnLogout.addEventListener("click", logout);
 
-const getUserDoc = async (db, user) => {
-    const docRef = doc(db, "userInfo", user.uid);
-    const docSnap = await getDoc(docRef);
-    return docSnap;
+/* revisar função deleteAccount [sugestão do blackbox]*/
+const deleteAccount = async () => {
+    const user = auth.currentUser;
+
+    if (user) {
+      try {
+        await runTransaction(db, async (transaction) => {
+          const userDocRef = doc(db, 'userInfo', user.uid);
+          const userDocSnap = await transaction.get(userDocRef);
+
+          if (userDocSnap.exists()) {
+            transaction.delete(userDocRef);
+          } else {
+            throw new Error('User document does not exist');
+          }
+        });
+
+        console.log('User document deleted successfully');
+      } catch (error) {
+        console.error('Error deleting user document:', error);
+      }
+    } else {
+      console.log("No user logged in");
+    }
 };
+
+btnSignout.addEventListener("click", deleteAccount);
+
+
+/* revisar botão Info [sugestão do blackbox]*/
 
 btnInfo.addEventListener("click", async () => {
     const docSnap = await getUserDoc(db, auth.currentUser);
@@ -179,7 +207,9 @@ btnInfo.addEventListener("click", async () => {
       console.log("No such document!");
     }
   });
- 
 
+
+
+ 
 
 
