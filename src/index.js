@@ -171,6 +171,7 @@ const deleteAccount = async () => {
 
     if (user) {
       try {
+        // Delete user data from Firestore
         await runTransaction(db, async (transaction) => {
           const userDocRef = doc(db, 'userInfo', user.uid);
           const userDocSnap = await transaction.get(userDocRef);
@@ -182,9 +183,12 @@ const deleteAccount = async () => {
           }
         });
 
-        console.log('User document deleted successfully');
+        // Delete user's authentication account
+        await deleteUser(user);
+
+        console.log('User account and data deleted successfully');
       } catch (error) {
-        console.error('Error deleting user document:', error);
+        console.error('Error deleting user account and data:', error);
       }
     } else {
       console.log("No user logged in");
