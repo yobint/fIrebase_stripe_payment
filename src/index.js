@@ -19,7 +19,9 @@ const firebaseApp = initializeApp({
     appId: "1:256012644284:web:38ef5cf3439f2cf5be45b9"
 });
 
+const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
+
 onAuthStateChanged(auth, user => {
     if(user != null) {
         console.log('logged in!');
@@ -29,7 +31,6 @@ onAuthStateChanged(auth, user => {
         console.log('No user');
     }
 });
-
 
 const monitorAuthState = async () => {
     return new Promise((resolve) => {
@@ -46,7 +47,6 @@ const monitorAuthState = async () => {
     });
   };
 
-const db = getFirestore(firebaseApp);
 const firestore = getFirestore();
 
 const newUser = doc(firestore, 'userInfo/userList');
@@ -137,7 +137,6 @@ const createAccount = async () =>  {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
         const user = userCredential.user;
-        console.log("Account created:", user);
         return user;
     }
     catch(error) {
