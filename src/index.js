@@ -9,7 +9,8 @@ import {
     deleteUser
 } from 'firebase/auth';
 
-import { getFirestore,
+import { 
+     getFirestore,
      doc,
      getDoc,
      updateDoc,
@@ -18,6 +19,11 @@ import { getFirestore,
      collection,
      runTransaction
 } from "firebase/firestore";
+
+import { 
+      getStorage,
+      ref,
+} from "firebase/storage";
 
 
 const firebaseApp = initializeApp({
@@ -31,6 +37,8 @@ const firebaseApp = initializeApp({
 
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
+const storage = getStorage(firebaseApp, "gs://projeto-01-42f74.appspot.com");
+
 
 onAuthStateChanged(auth, user => {
     if(user != null) {
@@ -217,3 +225,35 @@ btnInfo.addEventListener("click", async () => {
     console.error('Error getting user data:', error);
   }
 });
+
+/*Sugestões de kusanali
+// Get a reference to the root of the storage syst
+const bucketName = 'projeto-01-42f74.appspot.com';
+const filePath = 'file.jpg';
+const storageRef = ref(storage, filePath);
+const uploadTask = uploadBytesResumable(storageRef, file);
+
+// Construct the upload URL
+const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o?name=${filePath}`;
+
+// Upload the file to Cloud Storage
+uploadTask.on('state_changed', (snapshot) => {
+  // Handle upload progress
+}, (error) => {
+  // Handle upload errors
+}, () => {
+  // Handle successful upload
+  const downloadUrl = uploadTask.snapshot.ref.getDownloadURL();
+  console.log('Download URL:', downloadUrl);
+});
+
+// Upload a file to the 'images/space.jpg' reference
+const fileInput = document.getElementById('fileInput');
+const file = fileInput.files[0];
+uploadFileToCloudStorage(file, spaceRef)
+  .then(() => {
+    console.log('File uploaded successfully');
+  })
+  .catch((error) => {
+    console.error('Error uploading file:', error);
+  });*/
