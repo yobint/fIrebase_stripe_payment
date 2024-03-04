@@ -68,14 +68,17 @@ const firestore = getFirestore();
 
 const newUser = doc(firestore, 'userInfo/userList');
   
-const writeNewUser = async () => {
+const writeNewUser = async (name, phone, cpf) => {
   const user = auth.currentUser;
 
     if (user) {
       console.log(user);
       const docData = {
+        name: name || user.displayName,
         email: user.email,
         uid: user.uid,
+        phone: phone || user.phoneNumber,
+        cpf: cpf,
     };
     try {
       const userDocRef = doc(db, 'userInfo/', user.uid);
@@ -113,6 +116,9 @@ btnLogin.addEventListener("click", loginEmailPassword);
 const createAccount = async () =>  {
     const loginEmail = txtEmail.value;
     const loginPassword = txtPassword.value;
+    const name = txtName.value;
+    const phone = txtPhone.value;
+    const cpf = txtCPF.value;
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
@@ -122,7 +128,7 @@ const createAccount = async () =>  {
     catch(error) {
         console.log(error);
     } finally {
-      writeNewUser();
+      writeNewUser(name, phone, cpf);
     }
 };
 
