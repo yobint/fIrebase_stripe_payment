@@ -44,7 +44,6 @@ onAuthStateChanged(auth, user => {
     if(user != null) {
         console.log('logged in!');
         console.log(user);
-        writeNewUser();
     } else {
         console.log('No user');
     }
@@ -76,8 +75,7 @@ const writeNewUser = async () => {
       console.log(user);
       const docData = {
         email: user.email,
-        uid: user.uid, 
-        lastLogin: new Date(),
+        uid: user.uid,
     };
     try {
       const userDocRef = doc(db, 'userInfo/', user.uid);
@@ -107,8 +105,6 @@ const loginEmailPassword = async () => {
     }
     catch(error) {
         console.log(error);
-    } finally {
-        writeNewUser();
     }
 };
 
@@ -126,7 +122,7 @@ const createAccount = async () =>  {
     catch(error) {
         console.log(error);
     } finally {
-        writeNewUser();
+      writeNewUser();
     }
 };
 
@@ -215,7 +211,7 @@ uploadTask.on('state_changed', (snapshot) => {
 
 // Upload a file to the 'images/space.jpg' reference
 const fileInput = document.getElementById('fileInput');
-const file = fileInput.files[0];cd 
+const file = fileInput.files[0];
 uploadFileToCloudStorage(file, spaceRef)
   .then(() => {
     console.log('File uploaded successfully');
