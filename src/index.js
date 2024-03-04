@@ -56,6 +56,15 @@ const monitorAuthState = async () => {
         if (user != null) {
           console.log("logged in");
           console.log(user);
+
+          const nameInput = document.getElementById("txtName");
+          const phoneInput = document.getElementById("Phone");
+          const cpfInput = document.getElementById("CPF");
+
+          nameInput.addEventListener("input", writeNewUser);
+          phoneInput.addEventListener("input", writeNewUser);
+          cpfInput.addEventListener("input", writeNewUser);
+
           resolve(true);
         } else {
           console.log("no user");
@@ -104,15 +113,21 @@ const writeNewUser = async () => {
   
 const writeNewUser = async () => {
   const user = auth.currentUser;
- 
-  if (user) {
-    console.log(user);
-    const docData = {
-      email: user.email,
-      uid: user.uid,
-      lastLogin: new Date(),
-    };
 
+  const name = document.getElementById("txtName").value;
+  const phone = document.getElementById("Phone").value;
+  const cpf = document.getElementById("CPF").value;
+
+    if (user) {
+      console.log(user);
+      const docData = {
+        email: user.email,
+        uid: user.uid,
+        name: user.displayName || name,
+        phone: user.phoneNumber || phone, 
+        cpf: user.cpf || cpf,
+        lastLogin: new Date(),
+    };
     try {
       const userDocRef = doc(db, 'userInfo/', user.uid);
       const userDocSnap = await getDoc(userDocRef);
@@ -220,13 +235,13 @@ btnInfo.addEventListener("click", async () => {
   try {
     const userDocSnap = await getDoc(doc(db, 'userInfo', auth.currentUser.uid));
     const userData = userDocSnap.data();
-    console.log(`Email: ${userData.email}, UID: ${userData.uid}`);
+    console.log(`Name: ${userData.name}, Email: ${userData.email}, UID: ${userData.uid}, CPF: ${userData.cpf}, Phone: ${userData.phone} ` );
   } catch (error) {
     console.error('Error getting user data:', error);
   }
 });
 
-/*Sugestões de kusanali
+/*Sugestões de kusanali para Cloud Storage
 // Get a reference to the root of the storage syst
 const bucketName = 'projeto-01-42f74.appspot.com';
 const filePath = 'file.jpg';
