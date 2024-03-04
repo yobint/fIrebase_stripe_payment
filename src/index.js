@@ -111,7 +111,12 @@ const loginEmailPassword = async () => {
     }
 };
 
-btnLogin.addEventListener("click", loginEmailPassword); 
+btnLogin.addEventListener("click", loginEmailPassword);
+
+const isValidNumber = (value) => {
+  const number = Number(value);
+  return !isNaN(number) && Number.isFinite(number);
+}; 
 
 const createAccount = async () =>  {
     const loginEmail = txtEmail.value;
@@ -119,6 +124,17 @@ const createAccount = async () =>  {
     const name = txtName.value;
     const phone = txtPhone.value;
     const cpf = txtCPF.value;
+
+    if (!isValidNumber(phone)) {
+      console.error('Phone number must be a valid number');
+      return;
+    }
+  
+    if (!isValidNumber(cpf)) {
+      console.error('CPF must be a valid number');
+      return;
+    }
+  
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
