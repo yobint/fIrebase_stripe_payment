@@ -56,15 +56,6 @@ const monitorAuthState = async () => {
         if (user != null) {
           console.log("logged in");
           console.log(user);
-
-          const nameInput = document.getElementById("txtName");
-          const phoneInput = document.getElementById("Phone");
-          const cpfInput = document.getElementById("CPF");
-
-          nameInput.addEventListener("input", writeNewUser);
-          phoneInput.addEventListener("input", writeNewUser);
-          cpfInput.addEventListener("input", writeNewUser);
-
           resolve(true);
         } else {
           console.log("no user");
@@ -77,55 +68,15 @@ const monitorAuthState = async () => {
 const firestore = getFirestore();
 
 const newUser = doc(firestore, 'userInfo/userList');
-
-/* FUNÇÂO ÙTIL PARA ATUALIZAR UM DOCUMENTO [incialmente o documento userList na coleção userInfo]
-const writeNewUser = async () => {
-    const user = auth.currentUser;
-  
-    if (user) {
-      console.log(user);
-      const docData = {
-        [user.uid]: {
-          email: user.email,
-          lastLogin: new Date(),
-        },
-      };
-  
-      try {
-        const userDocRef = doc(db, 'userInfo', 'userList');
-        const userDocSnap = await getDoc(userDocRef);
-  
-        if (userDocSnap.exists()) {
-          await updateDoc(userDocRef, {
-            ...userDocSnap.data(),
-            ...docData,
-          });
-        } else {
-          await setDoc(userDocRef, docData);
-        }
-      } catch (error) {
-        console.log('Error writing user data:', error);
-      }
-    } else {
-      console.log("No user logged in");
-    }
-  };*/
   
 const writeNewUser = async () => {
   const user = auth.currentUser;
-
-  const name = document.getElementById("txtName").value;
-  const phone = document.getElementById("Phone").value;
-  const cpf = document.getElementById("CPF").value;
 
     if (user) {
       console.log(user);
       const docData = {
         email: user.email,
-        uid: user.uid,
-        name: user.displayName || name,
-        phone: user.phoneNumber || phone, 
-        cpf: user.cpf || cpf,
+        uid: user.uid, 
         lastLogin: new Date(),
     };
     try {
@@ -264,7 +215,7 @@ uploadTask.on('state_changed', (snapshot) => {
 
 // Upload a file to the 'images/space.jpg' reference
 const fileInput = document.getElementById('fileInput');
-const file = fileInput.files[0];
+const file = fileInput.files[0];cd 
 uploadFileToCloudStorage(file, spaceRef)
   .then(() => {
     console.log('File uploaded successfully');
@@ -272,3 +223,36 @@ uploadFileToCloudStorage(file, spaceRef)
   .catch((error) => {
     console.error('Error uploading file:', error);
   });*/
+
+  /* FUNÇÂO ÙTIL PARA ATUALIZAR UM DOCUMENTO [incialmente o documento userList na coleção userInfo]
+const writeNewUser = async () => {
+    const user = auth.currentUser;
+  
+    if (user) {
+      console.log(user);
+      const docData = {
+        [user.uid]: {
+          email: user.email,
+          lastLogin: new Date(),
+        },
+      };
+  
+      try {
+        const userDocRef = doc(db, 'userInfo', 'userList');
+        const userDocSnap = await getDoc(userDocRef);
+  
+        if (userDocSnap.exists()) {
+          await updateDoc(userDocRef, {
+            ...userDocSnap.data(),
+            ...docData,
+          });
+        } else {
+          await setDoc(userDocRef, docData);
+        }
+      } catch (error) {
+        console.log('Error writing user data:', error);
+      }
+    } else {
+      console.log("No user logged in");
+    }
+  };*/
