@@ -210,6 +210,43 @@ btnInfo.addEventListener("click", async () => {
   }
 });
 
+/* revisar função updateUserFields >> sugestão de kusanali*/
+
+const updateUserField = (uid, field, value) => {
+  const docData = {};
+  docData[field] = value;
+
+  const userDocRef = doc(db, 'userInfo/', uid);
+  getDoc(userDocRef)
+    .then((userDocSnap) => {
+      if (userDocSnap.exists) {
+        updateDoc(userDocRef, docData);
+      } else {
+        throw new Error('User document does not exist');
+      }
+    })
+    .catch((error) => {
+      console.error('Error updating user field:', error);
+    });
+};
+
+const updateUser = () => {
+  const uid = auth.currentUser.uid;
+  const name = txtName.value;
+  const phone = txtPhone.value;
+
+  if (name) {
+    updateUserField(uid, 'name', name);
+  }
+
+  if (phone) {
+    updateUserField(uid, 'phone', phone);
+  }
+};
+
+btnUpdate.addEventListener("click", updateUser);
+
+
 /*Sugestões de kusanali para Cloud Storage
 // Get a reference to the root of the storage syst
 const bucketName = 'projeto-01-42f74.appspot.com';
