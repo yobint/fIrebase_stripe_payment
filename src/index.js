@@ -23,6 +23,8 @@ import {
 import { 
       getStorage,
       ref,
+      uploadBytes,
+      getDownloadURL
 } from "firebase/storage";
 
 
@@ -38,7 +40,6 @@ const firebaseApp = initializeApp({
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
 const storage = getStorage(firebaseApp, "gs://projeto-01-42f74.appspot.com");
-
 
 onAuthStateChanged(auth, user => {
     if(user != null) {
@@ -245,6 +246,41 @@ const updateUser = () => {
 };
 
 btnUpdate.addEventListener("click", updateUser);
+
+
+/*################################################################################################################*/
+
+const uploadFile = async () => {
+  const fileInput = document.getElementById("fileInput");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    throw new Error('File is required');
+  }
+
+  const fileName = file.name;
+  const fileExtension = fileName.split('.').pop();
+
+  if (!['jpg', 'jpeg', 'png', 'pdf'].includes(fileExtension)) {
+    throw new Error('Invalid file format');
+  }
+
+  const storageRef = ref(storage, `files/${fileName}`);
+  const snapshot = await uploadBytes(storageRef, file);
+  const url = await getDownloadURL(snapshot.ref);
+
+  return url;
+};
+
+const btnUpload = document.getElementById('btnUpload');
+btnUpload.addEventListener('click', async () => {
+  try {
+    const url = await uploadFile();
+    console.log('Download URL:', url);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+});
 
 
 /*Sugestões de kusanali para Cloud Storage
