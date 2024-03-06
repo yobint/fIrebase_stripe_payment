@@ -40,6 +40,7 @@ const firebaseApp = initializeApp({
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
 const storage = getStorage(firebaseApp, "gs://projeto-01-42f74.appspot.com");
+const storageRef = ref(storage, 'campaignimage.png');
 
 onAuthStateChanged(auth, user => {
     if(user != null) {
@@ -247,9 +248,6 @@ const updateUser = () => {
 
 btnUpdate.addEventListener("click", updateUser);
 
-
-/*################################################################################################################*/
-
 const uploadFile = async () => {
   const fileInput = document.getElementById("fileInput");
   const file = fileInput.files[0];
@@ -281,6 +279,7 @@ btnUpload.addEventListener('click', async () => {
     console.error('Error:', error);
   }
 });
+
 
 
 /*Sugestões de kusanali para Cloud Storage
