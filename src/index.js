@@ -40,7 +40,6 @@ const firebaseApp = initializeApp({
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
 const storage = getStorage(firebaseApp, "gs://projeto-01-42f74.appspot.com");
-const storageRef = ref(storage, 'campaignimage.png');
 
 onAuthStateChanged(auth, user => {
     if(user != null) {
