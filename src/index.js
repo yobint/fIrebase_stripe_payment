@@ -280,7 +280,6 @@ btnUpload.addEventListener('click', async () => {
 });
 
 
-
 /*Sugestões de kusanali para Cloud Storage
 // Get a reference to the root of the storage syst
 const bucketName = 'projeto-01-42f74.appspot.com';
