@@ -47,7 +47,7 @@
 
     </form>
   </div>
-  <div>
+  <!-- <div>
     <div class="header">
       <h1>Upload a File</h1>
     </div>
@@ -56,6 +56,28 @@
       <button id="btnUpload" type="button" class="button buttonBlue">
         Upload
       </button>
+  </div> -->
+  <div>
+    <div class="header">
+      <h1>Campaign Form</h1>
+    </div>
+    <form action="/upload" id="campaignForm" method="post" enctype="multipart/form-data">
+      <label for="campaignName">Campaign Name:</label><br>
+      <input type="text" id="campaignName" required><br>
+      <label for="campaignCity">City:</label><br>
+      <input type="text" id="campaignCity"  required><br>
+      <label for="campaignCars">Number of Cars:</label><br>
+      <input type="number" id="campaignCars" required><br>
+      <label for="campaignMonths">Number of Months:</label><br>
+      <input type="number" id="campaignMonths" required><br>
+      <label for="campaignCompany">Company:</label><br>
+      <input type="text" id="campaignCompany" required><br>
+      <label for="campaignAdvertiser">Advertiser:</label><br>
+      <input type="text" id="campaignAdvertiser" required><br>
+      <label for="campaignFile">Campaign File:</label><br>
+      <input type="file" id="campaignFileInput" accept=".jpg,.jpeg,.png,.pdf" required><br>
+      <button id="create-campaign-button" type="button" class="button buttonBlue">Create Campaign</button>
+    </form>
   </div>
   <footer>
  

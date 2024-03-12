@@ -12,19 +12,25 @@ import {
 import { 
      getFirestore,
      doc,
+     addDoc,
      getDoc,
      updateDoc,
      setDoc,
      getDocs,
      collection,
-     runTransaction
+     runTransaction,
+     arrayUnion
 } from "firebase/firestore";
 
 import { 
       getStorage,
       ref,
       uploadBytes,
-      getDownloadURL
+      getDownloadURL,
+      getMetadata,
+      listAll,
+      updateMetadata,
+      deleteObject
 } from "firebase/storage";
 
 
@@ -64,10 +70,6 @@ const monitorAuthState = async () => {
       });
     });
   };
-
-const firestore = getFirestore();
-
-const newUser = doc(firestore, 'userInfo/userList');
   
 const writeNewUser = async (name, phone, cpf) => {
   const user = auth.currentUser;
@@ -82,7 +84,7 @@ const writeNewUser = async (name, phone, cpf) => {
         cpf: cpf,
     };
     try {
-      const userDocRef = doc(db, 'userInfo/', user.uid);
+      const userDocRef = doc(db, 'advertisers', user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
@@ -135,7 +137,6 @@ const createAccount = async () =>  {
       console.error('CPF must be a valid number');
       return;
     }
-  
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
@@ -165,7 +166,7 @@ const deleteAccount = async () => {
       try {
         // Delete user data from Firestore
         await runTransaction(db, async (transaction) => {
-          const userDocRef = doc(db, 'userInfo', user.uid);
+          const userDocRef = doc(db, 'advertisers', );
           const userDocSnap = await transaction.get(userDocRef);
 
           if (userDocSnap.exists()) {
@@ -191,7 +192,7 @@ btnSignout.addEventListener("click", deleteAccount);
 
 /* revisar botão Info [sugestão do blackbox]*/
 const getUserDoc = async (db, user) => {
-    const userDocRef = doc(db, 'userInfo', user.uid);
+    const userDocRef = doc(db, 'advertisers', user.uid);
     const userDocSnap = await getDoc(userDocRef);
   
     if (userDocSnap.exists) {
@@ -203,7 +204,7 @@ const getUserDoc = async (db, user) => {
 
 btnInfo.addEventListener("click", async () => {
   try {
-    const userDocSnap = await getDoc(doc(db, 'userInfo', auth.currentUser.uid));
+    const userDocSnap = await getDoc(doc(db, 'advertisers', auth.currentUser.uid));
     const userData = userDocSnap.data();
     console.log(`Name: ${userData.name}, Email: ${userData.email}, UID: ${userData.uid}, CPF: ${userData.cpf}, Phone: ${userData.phone} ` );
   } catch (error) {
@@ -217,7 +218,7 @@ const updateUserField = (uid, field, value) => {
   const docData = {};
   docData[field] = value;
 
-  const userDocRef = doc(db, 'userInfo/', uid);
+  const userDocRef = doc(db, 'advertisers', uid);
   getDoc(userDocRef)
     .then((userDocSnap) => {
       if (userDocSnap.exists) {
@@ -247,7 +248,80 @@ const updateUser = () => {
 
 btnUpdate.addEventListener("click", updateUser);
 
-const uploadFile = async () => {
+const generateCampaignId = () => {
+  return 'campaign-' + Math.random().toString(36).substr(2, 9);
+};
+
+const createAdvertisingCampaign = async () => {
+  const user = auth.currentUser;
+  const campaignName = document.getElementById("campaignName").value;
+  const campaignCity = document.getElementById("campaignCity").value;
+  const campaignCars = document.getElementById("campaignCars").value;
+  const campaignMonths = document.getElementById("campaignMonths").value;
+  const campaignCompany = document.getElementById("campaignCompany").value;
+  const campaignAdvertiser = document.getElementById("campaignAdvertiser").value;
+
+  if (user) {
+    try {
+      const campaignId = generateCampaignId(); // Generate campaignId here
+      const campaignFileUrl = await uploadCampaignFile(campaignId);
+
+      const campaignData = {
+        uid: user.uid,
+        name: campaignName,
+        city: campaignCity,
+        cars: campaignCars,
+        months: campaignMonths,
+        situation: 'waiting',
+        drivers: [],
+        company: campaignCompany,
+        advertiser: campaignAdvertiser,
+        file: campaignFileUrl,
+      };
+      const campaignDocRef = doc(db, `campaigns/${campaignId}`);
+      await setDoc(campaignDocRef, campaignData);
+
+      // Update the user's campaigns array in Firestore
+      const userDocRef = doc(db, `advertisers/${user.uid}`);
+      await updateDoc(userDocRef, {
+        campaigns: arrayUnion(campaignId),
+      });
+
+      console.log('Advertising campaign created successfully');
+    } catch (error) {
+      console.error('Error creating advertising campaign:', error);
+    }
+  } else {
+    console.log('No user logged in');
+  }
+};
+
+const uploadCampaignFile = async (campaignId) => {
+  const user = auth.currentUser;
+  const fileInput = document.getElementById("campaignFileInput");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    throw new Error('File is required');
+  }
+
+  const fileName = file.name;
+  const fileExtension = fileName.split('.').pop();
+
+  if (!['jpg', 'jpeg', 'png', 'pdf'].includes(fileExtension)) {
+    throw new Error('Invalid file format');
+  }
+
+  const storageRef = ref(storage, `users/advertisers/${user.uid}/campaigns/${campaignId}.${fileExtension}`);
+  const snapshot = await uploadBytes(storageRef, file);
+  const url = await getDownloadURL(snapshot.ref);
+
+  return url;
+};
+
+const createCampaignButton = document.getElementById("create-campaign-button");
+createCampaignButton.addEventListener("click", createAdvertisingCampaign);
+/*const uploadFile = async () => {
   const fileInput = document.getElementById("fileInput");
   const file = fileInput.files[0];
 
@@ -268,8 +342,8 @@ const uploadFile = async () => {
 
   return url;
 };
-
-const btnUpload = document.getElementById('btnUpload');
+*/
+/*const btnUpload = document.getElementById('btnUpload');
 btnUpload.addEventListener('click', async () => {
   try {
     const url = await uploadFile();
@@ -277,9 +351,164 @@ btnUpload.addEventListener('click', async () => {
   } catch (error) {
     console.error('Error:', error);
   }
+});*/
+
+/* MY WAY >> const generateCampaignId = () => {
+  return 'campaign-' + Math.random().toString(36).substr(2, 9);
+};
+const campaignId = await generateCampaignId();
+
+const uploadCampaignFile = async () => {
+  const user = auth.currentUser;
+  const fileInput = document.getElementById("campaignFileInput");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    throw new Error('File is required');
+  }
+
+  const fileName = file.name;
+  const fileExtension = fileName.split('.').pop();
+
+  if (!['jpg', 'jpeg', 'png', 'pdf'].includes(fileExtension)) {
+    throw new Error('Invalid file format');
+  }
+
+  const storageRef = ref(storage, `users/advertisers/${user.uid}/campaigns/${campaignId}.${fileExtension}`);
+  const snapshot = await uploadBytes(storageRef, file);
+  const url = await getDownloadURL(snapshot.ref);
+
+  return url;
+};
+
+const createAdvertisingCampaign = async () => {
+  const user = auth.currentUser;
+  const campaignName = document.getElementById("campaignName").value;
+  const campaignCity = document.getElementById("campaignCity").value;
+  const campaignCars = document.getElementById("campaignCars").value;
+  const campaignMonths = document.getElementById("campaignMonths").value;
+  const campaignCompany = document.getElementById("campaignCompany").value;
+  const campaignAdvertiser = document.getElementById("campaignAdvertiser").value;
+  const campaignFileUrl = await uploadCampaignFile();
+
+  if (user) {
+    try {
+      const campaignData = {
+        Id: campaignId,
+        Name: campaignName,
+        City: campaignCity,
+        Cars: campaignCars,
+        Months: campaignMonths,
+        Situation: 'waiting',
+        Drivers: [],
+        Company: campaignCompany,
+        Advertiser: campaignAdvertiser,
+        File: campaignFileUrl,
+      };
+      const campaignDocRef = doc(db, `campaigns/${user.uid}`);
+      await setDoc(campaignDocRef, campaignData);
+
+      // Update the user's campaigns array in Firestore
+      const userDocRef = doc(db, `advertisers/${user.uid}`);
+      await updateDoc(userDocRef, {
+        campaigns: arrayUnion(campaignId),
+      });
+
+      console.log('Advertising campaign created successfully');
+    } catch (error) {
+      console.error('Error creating advertising campaign:', error);
+    }
+  } else {
+    console.log('No user logged in');
+  }
+};
+
+const createCampaignButton = document.getElementById("create-campaign-button");
+createCampaignButton.addEventListener("click", createAdvertisingCampaign); <<*/
+
+/* 2 >> const createAdvertisingCampaign = async (campaignName, campaignCity, campaignCars, campaignMonths, campaignCompany, campaignAdvertiser, campaignFile) => {
+  const user = auth.currentUser;
+
+  if (user) {
+    const campaignId = generateCampaignId();
+
+    const campaignData = {
+      Id: campaignId,
+      Name: campaignName,
+      City: campaignCity,
+      Cars: campaignCars,
+      Months: campaignMonths,
+      Situation: 'waiting',
+      Drivers: [],
+      Company: campaignCompany,
+      Advertiser: campaignAdvertiser,
+      File: await uploadCampaignFile(campaignFile, campaignId),
+    };
+
+    try {
+      const campaignDocRef = doc(db, 'campaignInfo/c6EVhA0RyaPSwNATxr0xgvfbMQN2', campaignId);
+      await setDoc(campaignDocRef, campaignData);
+
+      const userDocRef = doc(db, 'userInfo/c6EVhA0RyaPSwNATxr0xgvfbMQN2');
+      await updateDoc(userDocRef, {
+        campaigns: arrayUnion(campaignId),
+      });
+
+      console.log('Advertising campaign created successfully');
+    } catch (error) {
+      console.error('Error creating advertising campaign:', error);
+    }
+  } else {
+    console.log('No user logged in');
+  }
+};
+
+const generateCampaignId = () => {
+  return 'campaign-' + Math.random().toString(36).substr(2, 9);
+};
+ const uploadCampaignFile = async (file, campaignId) => {
+  if (!file) {
+    throw new Error('File is required');
+  }
+
+  const fileName = file.name;
+  const fileExtension = fileName.split('.').pop();
+
+  if (!['jpg', 'jpeg', 'png', 'pdf'].includes(fileExtension)) {
+    throw new Error('Invalid file format');
+  }
+
+  const user = auth.currentUser;
+  const userFolderRef = ref(storage, `campaigns/c6EVhA0RyaPSwNATxr0xgvfbMQN2`);
+  const userFolderSnapshot = await getStorage(userFolderRef);
+
+  if (!userFolderSnapshot.exists()) {
+    await storage.ref(userFolderRef).mkdir();
+  }
+
+  const campaignFolderRef = ref(storage, `campaigns/c6EVhA0RyaPSwNATxr0xgvfbMQN2/${campaignId}`);
+  const snapshot = await uploadBytes(campaignFolderRef, file);
+  const url = await getDownloadURL(snapshot.ref);
+
+  return url;
+};
+
+const campaignForm = document.getElementById('campaignForm');
+
+campaignForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const campaignName = campaignForm.elements['campaignName'].value;
+  const campaignCity = campaignForm.elements['campaignCity'].value;
+  const campaignCars = campaignForm.elements['campaignCars'].value;
+  const campaignMonths = campaignForm.elements['campaignMonths'].value;
+  const campaignCompany = campaignForm.elements['campaignCompany'].value;
+  const campaignAdvertiser = campaignForm.elements['campaignAdvertiser'].value;
+  const campaignFile = campaignForm.elements['campaignFile'].files[0];
+
+  createAdvertisingCampaign(campaignName, campaignCity, campaignCars, campaignMonths, campaignCompany, campaignAdvertiser, campaignFile);
 });
-
-
+>> */
 /*Sugestões de kusanali para Cloud Storage
 // Get a reference to the root of the storage syst
 const bucketName = 'projeto-01-42f74.appspot.com';
@@ -312,7 +541,7 @@ uploadFileToCloudStorage(file, spaceRef)
     console.error('Error uploading file:', error);
   });*/
 
-  /* FUNÇÂO ÙTIL PARA ATUALIZAR UM DOCUMENTO [incialmente o documento userList na coleção userInfo]
+  /* FUNÇÂO ÙTIL PARA ATUALIZAR UM DOCUMENTO [incialmente o documento userList na coleção userInfo]/*
 const writeNewUser = async () => {
     const user = auth.currentUser;
   
@@ -344,3 +573,5 @@ const writeNewUser = async () => {
       console.log("No user logged in");
     }
   };*/
+
+
