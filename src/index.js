@@ -249,7 +249,89 @@ const updateUser = () => {
 btnUpdate.addEventListener("click", updateUser);
 
 const generateCampaignId = () => {
-  return 'campaign-' + Math.random().toString(36).substr(2, 9);
+  return doc(db, 'campaigns').id;
+};
+
+const createAdvertisingCampaign = async () => {
+  const user = auth.currentUser;
+  const campaignName = document.getElementById("campaignName").value;
+  const campaignCity = document.getElementById("campaignCity").value;
+  const campaignCars = document.getElementById("campaignCars").value;
+  const campaignMonths = document.getElementById("campaignMonths").value;
+  const campaignCompany = document.getElementById("campaignCompany").value;
+  const campaignAdvertiser = document.getElementById("campaignAdvertiser").value;
+
+  if (user) {
+    try {
+      const campaignId = generateCampaignId(); // Generate campaignId here
+      const campaignFileUrl = await uploadCampaignFile(campaignId);
+
+      const campaignData = {
+        uid: user.uid,
+        name: campaignName,
+        city: campaignCity,
+        cars: campaignCars,
+        months: campaignMonths,
+        situation: 'waiting',
+        drivers: [],
+        company: campaignCompany,
+        advertiser: campaignAdvertiser,
+        file: campaignFileUrl,
+      };
+      const campaignDocRef = doc(db, `campaigns/${campaignId}`);
+      await setDoc(campaignDocRef, campaignData);
+
+      // Update the user's campaigns array in Firestore
+      const userDocRef = doc(db, `advertisers/${user.uid}`);
+      updateDoc(userDocRef, {
+        campaigns: arrayUnion(campaignId),
+      });
+
+      console.log('Advertising campaign created successfully');
+    } catch (error) {
+      console.error('Error creating advertising campaign:', error);
+    }
+  } else {
+    console.log('No user logged in');
+  }
+};
+
+const uploadCampaignFile = async (campaignId) => {
+  const user = auth.currentUser;
+  const fileInput = document.getElementById("campaignFileInput");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    throw new Error('File is required');
+  }
+
+  const fileName = file.name;
+  const fileExtension = fileName.split('.').pop();
+
+  if (!['jpg', 'jpeg', 'png', 'pdf'].includes(fileExtension)) {
+    throw new Error('Invalid file format');
+  }
+
+  const storageRef = ref(storage, `users/advertisers/${user.uid}/campaigns/${campaignId}.${fileExtension}`);
+  const snapshot = uploadBytes(storageRef, file);
+  const url = getDownloadURL(snapshot.ref);
+
+  return url;
+};
+
+/* << MEU MODO >> 
+  const generateCampaignId = async () => {
+  let campaignId;
+  let campaignExists = true;
+
+  while (campaignExists) {
+    campaignId = 'campaign-' + Math.random().toString(36).substr(2, 9);
+    const campaignDocRef = doc(db, `campaigns/${campaignId}`);
+    const campaignDocSnap = await getDoc(campaignDocRef);
+    campaignExists = campaignDocSnap.exists();
+  }
+
+  return campaignId;
 };
 
 const createAdvertisingCampaign = async () => {
@@ -317,10 +399,11 @@ const uploadCampaignFile = async (campaignId) => {
   const url = await getDownloadURL(snapshot.ref);
 
   return url;
-};
+};*/
 
 const createCampaignButton = document.getElementById("create-campaign-button");
 createCampaignButton.addEventListener("click", createAdvertisingCampaign);
+// garantir agora 
 
 /*const uploadFile = async () => {
   const fileInput = document.getElementById("fileInput");
